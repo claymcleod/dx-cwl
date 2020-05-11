@@ -411,9 +411,9 @@ def compile_tool(args):
     compile_tool_internal(args.tool, args.assets, args.bundled, extradisk=args.extradisk, provider=args.instance_provider)
 
 # TODO: modify naming convention so this can be used as a module as well as conveniently via commoand line
-def compile_tool_internal(tool, assets, bundled, folder='/', extradisk=10000, provider='aws'):
-    tool_parsed = cwltool.load_tool.load_tool(tool, cwltool.workflow.defaultMakeTool, strict=False)
-    builder = cwltool.builder.Builder()
+def compile_tool_internal(tool, assets, bundled, folder='/', extradisk=10000, provider='azure'):
+    tool_parsed = cwltool.load_tool.load_tool(tool)
+    builder = cwltool.builder.Builder(None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
     builder.job = {}
     builder.requirements = []
     builder.outdir = None
@@ -421,7 +421,8 @@ def compile_tool_internal(tool, assets, bundled, folder='/', extradisk=10000, pr
     builder.resources = {}
     # e.g. {'cores': 1, 'ram': 4092, 'outdirSize': 512000, 'tmpdirSize': 512000}
     # See also: http://www.commonwl.org/v1.0/CommandLineTool.html#ResourceRequirement
-    req = tool_parsed.evalResources(builder, {})
+    runContext = cwltool.context.RuntimeContext()
+    req = tool_parsed.evalResources(builder, runContext)
     # CWL does not explicitly specify input requirements, add these for staging
     inreq, _ = tool_parsed.get_requirement("https://www.dnanexus.com/cwl#InputResourceRequirement")
     insize = int(inreq["indirMin"]) if inreq else 0
@@ -680,7 +681,7 @@ def compile_scatter_tool(workflow, sname, step, executable_id, folder='/', provi
     runSpec['interpreter'] = 'python2.7'
     runSpec['file'] = 'dx-cwl-scatter-code.py'
     runSpec['restartableEntryPoints'] = 'all'
-    runSpec['systemRequirements'] = {"*": {"instanceType": "mem1_ssd1_x2"}}
+    runSpec['systemRequirements'] = {"*": {"instanceType": "azure:mem1_ssd1_x2"}}
     runSpec['executionPolicy'] = { "restartOn": {"*": 1 } }
     runSpec['timeoutPolicy'] = {"*": { "hours": 48 }}
     runSpec['distribution'] = "Ubuntu"
@@ -948,7 +949,7 @@ def compile_workflow(args):
 def compile_workflow_internal(workflow_fname, assets, bundled, token, project, rootdir, provider='aws'):
 
     # Get 'normalized' CWL parse using cwltool module for use in some areas of compliation
-    workflow = cwltool.load_tool.load_tool(workflow_fname, cwltool.workflow.defaultMakeTool, strict=False)
+    workflow = cwltool.load_tool.load_tool(workflow_fname)
 
 
     # Get ordered list of steps for workflow to preserve order in DNAnexus workflow stages
