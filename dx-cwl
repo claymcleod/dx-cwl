@@ -47,7 +47,7 @@ def shell_suppress(cmd, ignore_error=False):
         if ignore_error:
             pass
         else:
-            print e.output
+            print(e.output)
             raise
     return out
 
@@ -103,8 +103,8 @@ class OrderedDictYAMLLoader(yaml.Loader):
     def __init__(self, *args, **kwargs):
         yaml.Loader.__init__(self, *args, **kwargs)
 
-        self.add_constructor(u'tag:yaml.org,2002:map', type(self).construct_yaml_map)
-        self.add_constructor(u'tag:yaml.org,2002:omap', type(self).construct_yaml_map)
+        self.add_constructor('tag:yaml.org,2002:map', type(self).construct_yaml_map)
+        self.add_constructor('tag:yaml.org,2002:omap', type(self).construct_yaml_map)
 
     def construct_yaml_map(self, node):
         data = OrderedDict()
@@ -124,7 +124,7 @@ class OrderedDictYAMLLoader(yaml.Loader):
             key = self.construct_object(key_node, deep=deep)
             try:
                 hash(key)
-            except TypeError, exc:
+            except TypeError as exc:
                 raise yaml.constructor.ConstructorError('while constructing a mapping',
                     node.start_mark, 'found unacceptable key (%s)' % exc, key_node.start_mark)
             value = self.construct_object(value_node, deep=deep)
@@ -148,7 +148,7 @@ def represent_odict(dump, tag, mapping, flow_style=None):
         dump.represented_objects[dump.alias_key] = node
     best_style = True
     if hasattr(mapping, 'items'):
-        mapping = mapping.items()
+        mapping = list(mapping.items())
     for item_key, item_value in mapping:
         node_key = dump.represent_data(item_key)
         node_value = dump.represent_data(item_value)
@@ -224,7 +224,7 @@ def traverse_items(x):
     if isinstance(x, list):
         return [(i['id'], i) for i in x]
     elif isinstance(x, dict):
-        return x.items()
+        return list(x.items())
 
 # TODO: Come up with generic method to do this
 def dx_legal_varname(v):
@@ -345,7 +345,7 @@ def prefix_instance_provider(provider, instance_type):
 
 # Obtain list of DNAnexus instances that satisfy desired constraints
 def satisfies_constraints(instancedb, cores, ram, disk):
-    return [(itype, properties['internalName']) for itype, properties in instancedb.items()
+    return [(itype, properties['internalName']) for itype, properties in list(instancedb.items())
                 if ('traits' in properties and
                     properties['traits']['numCores'] >= cores and
                     properties['traits']['totalMemoryMB'] >= ram*1.04858 and
@@ -383,7 +383,7 @@ def resource_constraints_to_dx_instance(cores, ram, disk, provider='aws'):
     # Filter instance types by provider.
     instancedb = {
         name: meta
-        for name, meta in instancedb.iteritems()
+        for name, meta in instancedb.items()
         if (provider == 'aws' and ':' not in name) or name.startswith(provider)
     }
 
@@ -458,7 +458,7 @@ def compile_tool_internal(tool, assets, bundled, folder='/', extradisk=10000, pr
                 sh("mkdir -p '{}'".format(full_path_basedir))
                 sh("cp '{}' '{}'".format(os.path.join(tool_basedir, sanitize_path(v)), full_path_basedir))
         if isinstance(tool, dict):
-            for k,v in tool.items():
+            for k,v in list(tool.items()):
                 obtain_import(k,v)
                 preprocess_tool(v)
         elif isinstance(tool, list):
@@ -525,14 +525,14 @@ def compile_tool_internal(tool, assets, bundled, folder='/', extradisk=10000, pr
         for x in assets:
             if get_image_name(x) in images_name_list:
                 runSpec['assetDepends'].append({"id": x})
-        print "Docker images assets used: "
-        print runSpec['assetDepends']
+        print("Docker images assets used: ")
+        print(runSpec['assetDepends'])
     if bundled:
         for x in bundled:
             bundled_name = dxpy.describe(x)['name']
             runSpec['bundledDepends'].append({"name": bundled_name, "id": {"$dnanexus_link": x} })
-        print "Bundled depends used: "
-        print runSpec['bundledDepends']
+        print("Bundled depends used: ")
+        print(runSpec['bundledDepends'])
 
             
     if not runSpec['assetDepends']:
@@ -690,14 +690,14 @@ def compile_scatter_tool(workflow, sname, step, executable_id, folder='/', provi
     if assets:
         for x in assets:
             runSpec['assetDepends'].append({"id": x})
-        print "Docker images assets used: "
-        print runSpec['assetDepends']
+        print("Docker images assets used: ")
+        print(runSpec['assetDepends'])
     if bundled:
         for x in bundled:
             bundled_name = dxpy.describe(x)['name']
             runSpec['bundledDepends'].append({"name": bundled_name, "id": {"$dnanexus_link": x} })
-        print "Bundled depends used: "
-        print runSpec['bundledDepends']
+        print("Bundled depends used: ")
+        print(runSpec['bundledDepends'])
 
             
     if not runSpec['assetDepends']:
@@ -830,7 +830,7 @@ def shell_suppress(cmd, ignore_error=False):
 
     dxapp['inputSpec'] = []
 
-    print sources
+    print(sources)
     for iname, itype in sources:
          dxtype, optional = itype
          dxinput = {}
@@ -960,7 +960,7 @@ def compile_workflow_internal(workflow_fname, assets, bundled, token, project, r
     folder = os.path.join(rootdir, wfname)
     dx_mkdir_archive(folder, ".cwl_workflow_archive")
 
-    print "Compiling tools/workflows for each step in the workflow"
+    print("Compiling tools/workflows for each step in the workflow")
     sys.stdout.flush()
     parsed_step = {}
     executable_id = {}
@@ -971,7 +971,7 @@ def compile_workflow_internal(workflow_fname, assets, bundled, token, project, r
        parsed_step[sname] = step
 
     for sname, svalue in traverse_items(raw_workflow['steps']):
-       print "    {}".format(sname)
+       print("    {}".format(sname))
        sys.stdout.flush()
        step = parsed_step[sname]
        if step_class(step) == 'Workflow':
@@ -982,7 +982,7 @@ def compile_workflow_internal(workflow_fname, assets, bundled, token, project, r
            executable_id[sname] = executable_id.get(sname, t)
 
 
-    print "Compiling CWL workflow to DNAnexus"
+    print("Compiling CWL workflow to DNAnexus")
     sys.stdout.flush()
     input_params = {}
     input_params['project'] = project
@@ -1017,16 +1017,16 @@ def compile_workflow_internal(workflow_fname, assets, bundled, token, project, r
                 for source_sname, source_svalue in traverse_items(raw_workflow['steps']):
                     if source_sname == iostage:
                         source_step = parsed_step[source_sname]
-                        print tooldef_fname(source_step)
+                        print(tooldef_fname(source_step))
                         source_tool = load_raw_tool(tooldef_fname(source_step))
                         if source_tool['inputs'] != []:
                             for source_iname, source_ivalue in traverse_items(source_tool['inputs']):
-                                print source_iname, ioname
+                                print(source_iname, ioname)
                                 if source_iname == ioname:
                                     return cwl2dx(source_ivalue)
                         if source_tool['outputs'] != []:
                             for source_iname, source_ivalue in traverse_items(source_tool['outputs']):
-                                print source_iname, ioname
+                                print(source_iname, ioname)
                                 if source_iname == ioname:
                                     return cwl2dx(source_ivalue)
 
@@ -1122,7 +1122,7 @@ def compile_workflow_internal(workflow_fname, assets, bundled, token, project, r
     input_params['folder'] = folder
     wfinfo = dxpy.api.workflow_new(input_params, headers={"Authorization": "Bearer {}".format(token)})
 
-    print "Workflow created in {}. ID: {}".format(folder, wfinfo['id'])
+    print("Workflow created in {}. ID: {}".format(folder, wfinfo['id']))
     sys.stdout.flush()
     return wfinfo['id']
 
@@ -1187,11 +1187,11 @@ def run_workflow_internal(workflow, inputs, token, project, rootdir, wait):
                 directory['location'] = os.path.join(basedir, sanitize_path(directory['location']))
                 return directory
             else:
-                return { k : compile_input_generic(k,v) for k,v in ivalue.items() }
+                return { k : compile_input_generic(k,v) for k,v in list(ivalue.items()) }
         else:
             return ivalue
 
-    dxinputs = { iname : compile_input_generic(iname, ivalue) for iname, ivalue in inp.items() }
+    dxinputs = { iname : compile_input_generic(iname, ivalue) for iname, ivalue in list(inp.items()) }
 
     folder = os.path.join(rootdir, "{}-output".format(os.path.basename(workflow)))
     dx_mkdir_archive(folder, ".cwl_workflow_output_archive")
@@ -1231,13 +1231,13 @@ def run_workflow_internal(workflow, inputs, token, project, rootdir, wait):
                     sh("unset DX_WORKSPACE_ID && dx cd $DX_PROJECT_CONTEXT_ID: && cd '{}' && dx download -rf '{}'".format(basedir_loc, ivalue['location']))
                     return ivalue
                 else:
-                    return { k : compile_output_generic(k,v) for k,v in ivalue.items() }
+                    return { k : compile_output_generic(k,v) for k,v in list(ivalue.items()) }
             else:
                 return ivalue
 
         # Filter for workflow level outputs -- TODO: remove after change is part of platform proper
-        dxoutputs = {iname: ivalue for iname, ivalue in analysis.describe()['output'].items() if "." not in iname}
-        cwloutputs = { iname : compile_output_generic(iname, ivalue) for iname, ivalue in dxoutputs.items()  }
+        dxoutputs = {iname: ivalue for iname, ivalue in list(analysis.describe()['output'].items()) if "." not in iname}
+        cwloutputs = { iname : compile_output_generic(iname, ivalue) for iname, ivalue in list(dxoutputs.items())  }
         # TODO: return CWL JSON outputs here as well to run conformance testing
         sys.stdout.write(json.dumps(cwloutputs, indent=2))
 

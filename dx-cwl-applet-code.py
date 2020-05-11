@@ -10,7 +10,7 @@ CWLTOOL_VERSION = "1.0.20171017195544"
 # TODO: potentially pull these out to common utilities
 def sh(cmd, ignore_error=False):
     try:
-        print cmd
+        print(cmd)
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as e:
         if ignore_error:
@@ -26,7 +26,7 @@ def shell_suppress(cmd, ignore_error=False):
         if ignore_error:
             pass
         else:
-            print e.output
+            print((e.output))
             raise
     return out
 
@@ -40,7 +40,7 @@ def main(**kwargs):
     os.environ["PATH"] = "/home/dnanexus/dx-toolkit/bin"+":"+os.environ["PATH"]
     os.environ["PYTHONPATH"] = "/home/dnanexus/dx-toolkit/share/dnanexus/lib/python2.7/site-packages:/home/dnanexus/dx-toolkit/lib64/python2.7/site-packages"+":"+os.environ["PYTHONPATH"]
 
-    print "Installing cwltool"
+    print("Installing cwltool")
     sh("pip install -U pip wheel setuptools")
     sh("pip install cwltool=={}".format(CWLTOOL_VERSION))
     sh("curl https://nodejs.org/dist/v6.11.2/node-v6.11.2-linux-x64.tar.gz | tar xzvf - --strip-components 1 -C /usr/local/ > /dev/null")
@@ -101,13 +101,13 @@ def main(**kwargs):
                 sh("unset DX_WORKSPACE_ID && dx cd $DX_PROJECT_CONTEXT_ID: && cd {} && dx download -rf {}".format(basedir_loc, ivalue['location']))
                 return ivalue
             else:
-                return { k : compile_input_generic(k,v) for k,v in ivalue.items() }
+                return { k : compile_input_generic(k,v) for k,v in list(ivalue.items()) }
         else:
             return ivalue
 
     print("DNANEXUS INPUTS:\n")
     pprint(dxinputs)
-    cwlinputs = { iname : compile_input_generic(iname, ivalue) for iname, ivalue in dxinputs.items() }
+    cwlinputs = { iname : compile_input_generic(iname, ivalue) for iname, ivalue in list(dxinputs.items()) }
 
     with open("cwlinputs.yml", "w") as f:
         f.write(yaml.safe_dump(cwlinputs))
@@ -156,17 +156,17 @@ def main(**kwargs):
                 sh("unset DX_WORKSPACE_ID && dx cd $DX_PROJECT_CONTEXT_ID: && dx upload -r {}".format(ovalue['path']))
                 return ovalue
             else:
-                return { k : compile_output_generic(k,v) for k,v in ovalue.items() }
+                return { k : compile_output_generic(k,v) for k,v in list(ovalue.items()) }
         else:
             return ovalue
 
     pprint("CWL OUTPUTS:\n")
     pprint(cwloutputs)
 
-    output = { oname: compile_output_generic(oname, ovalue) for oname, ovalue in cwloutputs.items() }
+    output = { oname: compile_output_generic(oname, ovalue) for oname, ovalue in list(cwloutputs.items()) }
 
     # Ensure that an optional output (CWL 'null' == JSON None) isn't included in DNAnexus output
-    for k,v in output.items():
+    for k,v in list(output.items()):
         if not v:
             del output[k]
 

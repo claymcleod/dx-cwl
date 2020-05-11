@@ -8,7 +8,7 @@ from pprint import pprint
 # TODO: potentially pull these out to common utilities
 def sh(cmd, ignore_error=False):
     try:
-        print cmd
+        print(cmd)
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as e:
         if ignore_error:
@@ -24,7 +24,7 @@ def shell_suppress(cmd, ignore_error=False):
         if ignore_error:
             pass
         else:
-            print e.output
+            print((e.output))
             raise
     return out
 
@@ -58,14 +58,14 @@ def main(**kwargs):
                 #basedir_loc = os.path.dirname(ivalue['location'])
                 #sh("unset DX_WORKSPACE_ID && dx mv $DX_PROJECT_CONTEXT_ID:{} $DX_PROJECT_CONTEXT_ID:{}".format(ivalue['location'], folder))
             else:
-                for k,v in ivalue.items():
+                for k,v in list(ivalue.items()):
                     compile_input_generic(k,v)
         else:
             return ivalue
 
     print("DNANEXUS INPUTS:\n")
     pprint(dxinputs)
-    for iname, ivalue in dxinputs.items():
+    for iname, ivalue in list(dxinputs.items()):
         compile_input_generic(iname, ivalue)
 
 
