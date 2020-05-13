@@ -411,7 +411,7 @@ def compile_tool(args):
     compile_tool_internal(args.tool, args.assets, args.bundled, extradisk=args.extradisk, provider=args.instance_provider)
 
 # TODO: modify naming convention so this can be used as a module as well as conveniently via commoand line
-def compile_tool_internal(tool, assets, bundled, folder='/', extradisk=10000, provider='azure'):
+def compile_tool_internal(tool, assets, bundled, folder='/', extradisk=10000, provider='aws'):
     tool_parsed = cwltool.load_tool.load_tool(tool)
     builder = cwltool.builder.Builder(None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
     builder.job = {}
@@ -681,7 +681,12 @@ def compile_scatter_tool(workflow, sname, step, executable_id, folder='/', provi
     runSpec['interpreter'] = 'python2.7'
     runSpec['file'] = 'dx-cwl-scatter-code.py'
     runSpec['restartableEntryPoints'] = 'all'
-    runSpec['systemRequirements'] = {"*": {"instanceType": "azure:mem1_ssd1_x2"}}
+    if provider == 'aws':
+        runSpec['systemRequirements'] = {"*": {"instanceType": "mem1_ssd1_x2"}}
+    elif provider == 'azure':
+        runSpec['systemRequirements'] = {"*": {"instanceType": "azure:mem1_ssd1_x2"}}
+    else:
+        raise Exception('Unknown provider: {}'.format(provider))
     runSpec['executionPolicy'] = { "restartOn": {"*": 1 } }
     runSpec['timeoutPolicy'] = {"*": { "hours": 48 }}
     runSpec['distribution'] = "Ubuntu"
