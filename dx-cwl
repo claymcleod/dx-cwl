@@ -510,7 +510,7 @@ def compile_tool_internal(tool, assets, bundled, folder='/', extradisk=10000, pr
             dxapp['outputSpec'].append(dxoutput)
 
     runSpec = {}
-    runSpec['interpreter'] = 'python2.7'
+    runSpec['interpreter'] = 'python3'
     runSpec['file'] = 'dx-cwl-applet-code.py'
 
     # TODO: determine these policies from some form of CWL metadata or companion file
@@ -678,7 +678,7 @@ def compile_scatter_tool(workflow, sname, step, executable_id, folder='/', provi
             dxapp['outputSpec'].append(dxoutput)
 
     runSpec = {}
-    runSpec['interpreter'] = 'python2.7'
+    runSpec['interpreter'] = 'python3'
     runSpec['file'] = 'dx-cwl-scatter-code.py'
     runSpec['restartableEntryPoints'] = 'all'
     if provider == 'aws':
@@ -860,7 +860,7 @@ def shell_suppress(cmd, ignore_error=False):
 
 
     runSpec = {}
-    runSpec['interpreter'] = 'python2.7'
+    runSpec['interpreter'] = 'python3'
     runSpec['file'] = 'dx-cwl-inlinejs-wf-input-code.py'
     runSpec['restartableEntryPoints'] = 'all'
     runSpec['systemRequirements'] = {"*": {"instanceType": instance}}
@@ -917,7 +917,7 @@ def compile_postprocess_tool(workflow, outputs, folder='/', provider='aws'):
     dxapp['outputSpec'] = dxapp['inputSpec']
 
     runSpec = {}
-    runSpec['interpreter'] = 'python2.7'
+    runSpec['interpreter'] = 'python3'
     runSpec['file'] = 'dx-cwl-postprocess-output-code.py'
     runSpec['restartableEntryPoints'] = 'all'
     runSpec['systemRequirements'] = {"*": {"instanceType": instance}}
